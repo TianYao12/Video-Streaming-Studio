@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -29,26 +30,48 @@ const s3 = new S3Client({
 
 export const getMovies = async (req, res) => {
   try {
-    const { username } = req.query;
-    const movies = await Movie.find({ createdBy: username });
+    const user = req.query.createdBy;
+    const m_movies = await Movie.find({ createdBy: user });
+    const movies = m_movies.map((movie) => movie.toObject());
     for (const movie of movies) {
       const getObjectParams = {
         Bucket: bucketName,
         Key: movie.url,
       };
       const command = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      movie.videoUrl = url;
+      const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      movie.full_url = full_url;
     }
-
-    console.log(movies);
-
     res.send(movies);
   } catch (error) {
     console.error("Error in s3.controller.js getMovies: ", error.message);
     res
       .status(500)
       .json({ error: "Internal server error in s3.controller.js getmovies" });
+  }
+};
+
+export const getAllMovies = async (req, res) => {
+  try {
+    const { category } = req.params;
+    console.log(category);
+    const m_movies = await Movie.find({ category });
+    const movies = m_movies.map((movie) => movie.toObject());
+    for (const movie of movies) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: movie.url,
+      };
+      const command = new GetObjectCommand(getObjectParams);
+      const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      movie.full_url = full_url;
+    }
+    res.json(movies);
+  } catch (error) {
+    console.error("Error in s3.controller.js getAllMovies: ", error.message);
+    res.status(500).json({
+      error: "Internal server error in s3.controller.js getallmovies",
+    });
   }
 };
 
@@ -60,6 +83,7 @@ export const postMovie = async (req, res) => {
 
     req.file.buffer;
 
+    // save to S3
     const videoName = randomVideoName();
     const params = {
       Bucket: bucketName,
@@ -67,10 +91,10 @@ export const postMovie = async (req, res) => {
       Body: req.file.buffer,
       ContentType: req.file.mimetype,
     };
-
     const command = new PutObjectCommand(params);
     await s3.send(command);
 
+    // save movie info in Movie collection
     const newMovie = new Movie({
       title,
       createdBy,
@@ -79,6 +103,7 @@ export const postMovie = async (req, res) => {
       url: videoName,
     });
     await newMovie.save();
+
     res.send(newMovie);
   } catch (error) {
     console.error("Error in s3.controller.js postMovie: ", error.message);
@@ -90,6 +115,21 @@ export const postMovie = async (req, res) => {
 
 export const deleteMovie = async (req, res) => {
   try {
+    const id = req.params.id;
+    const movie = await Movie.find({ _id: id });
+    if (!movie) {
+      res.status(404).send("Movie not found");
+      return;
+    }
+
+    const params = {
+      Bucket: bucketName,
+      Key: movie[0].url,
+    };
+
+    const command = new DeleteObjectCommand(params);
+    await s3.send(command);
+    await Movie.deleteOne({ _id: id });
   } catch (error) {
     console.error("Error in s3.controller.js deletemovie: ", error.message);
     res

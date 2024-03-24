@@ -6,13 +6,9 @@ const Home = () => {
   return (
     <>
       <Main />
-      <Carousel rowID="1" title="Trending" fetchURL={"Trending"} />
-      <Carousel
-        rowID="2"
-        title="Recently Watched"
-        fetchURL={"Recently Watched"}
-      />
-      <Carousel rowID="3" title="Horror" fetchURL={"Horror"} />
+      <Carousel rowID="1" category="Trending" />
+      <Carousel rowID="2" category="Recently Watched" />
+      <Carousel rowID="3" category="Horror" />
     </>
   );
 };

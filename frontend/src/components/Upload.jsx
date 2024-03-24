@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import axios from "axios";
-
+import Movie from "./Movie";
 const UploadForm = () => {
   const { authUser } = useAuthContext();
   const [title, setTitle] = useState("");
@@ -13,21 +13,14 @@ const UploadForm = () => {
   useEffect(() => {
     const postMovies = async () => {
       try {
-        if (authUser && authUser.username) {
-          // Check if authUser and its username property are defined
-          const response = await axios.get(
-            "http://localhost:8001/s3/getMovies",
-            {
-              params: { username: authUser.username }, // Send username as a query parameter
-              headers: { "Content-Type": "application/json" }, // Headers should be outside params
-            }
-          );
-
-          console.log(response.data);
-          setData(response.data);
-        }
+        const response = await fetch(
+          `http://localhost:8001/s3/getmovies?createdBy=${authUser.username}`
+        );
+        const data = await response.json();
+        setData(data);
+        console.log("data", data);
       } catch (error) {
-        console.error("Error posting movies:", error);
+        console.error("Error fetching movies:", error);
       }
     };
     postMovies();
@@ -43,10 +36,23 @@ const UploadForm = () => {
     formData.append("description", description);
     formData.append("category", category);
 
-    await axios.post("http://localhost:8001/s3/movies", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    try {
+      await axios.post("http://localhost:8001/s3/movies", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error("Error uploading movie:", error);
+    }
     window.location.reload();
+  };
+
+  const handleDelete = async (id) => {
+    await fetch(`http://localhost:8001/s3/movies/${id}`, {
+      method: "DELETE",
+    });
   };
 
   return (
@@ -112,11 +118,26 @@ const UploadForm = () => {
               </button>
             </form>
           </div>
-          <div className="mt-30 text-white">
+          <div className="mt-30 text-white flex flex-col">
             <h1 className="text-3xl">Uploaded by {authUser.username}</h1>
-            {/* {data.map((d) => {
-              d
-            })} */}
+            {data
+              ? data.map((movie) => {
+                  return (
+                    <div className="rounded p-5 mt-5 flex border items-center">
+                      <div className="flex flex-col">
+                        <p className="text-white">{movie.title}</p>
+                        <Movie item={movie.full_url} />
+                      </div>
+                      <button
+                        className="w-20 h-10 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => handleDelete(movie._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  );
+                })
+              : null}
           </div>
         </div>
       </div>

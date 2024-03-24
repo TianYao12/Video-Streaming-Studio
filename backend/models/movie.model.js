@@ -20,7 +20,7 @@ const movieSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-  },
+  }
 });
 
 // mongoose figures to have movies collection

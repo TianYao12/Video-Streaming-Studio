@@ -5,7 +5,7 @@ import LogoutButton from "./LogOutButton";
 
 const Navbar = () => {
   const { authUser } = useAuthContext();
-  const isAdmin = authUser && authUser.role == "Admin";
+  const isAdmin = authUser && authUser.role === "Admin";
 
   return (
     <div className="flex items-center justify-between p-4 z-[100] w-full absolute">

@@ -32,7 +32,6 @@ const useSignup = () => {
       }
       // localstorage
       localStorage.setItem("netflix-user", JSON.stringify(data));
-      console.log("data",JSON.stringify(data))
       // context
       setAuthUser(data);
       console.log(JSON.parse(localStorage.getItem("netflix-user")) || null);
