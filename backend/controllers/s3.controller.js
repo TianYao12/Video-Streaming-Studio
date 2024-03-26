@@ -34,13 +34,15 @@ export const getMovies = async (req, res) => {
     const m_movies = await Movie.find({ createdBy: user });
     const movies = m_movies.map((movie) => movie.toObject());
     for (const movie of movies) {
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: movie.url,
-      };
-      const command = new GetObjectCommand(getObjectParams);
-      const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      movie.full_url = full_url;
+      movie.full_url = "https://dbgl7a08kprxr.cloudfront.net/" + movie.url;
+      // code for S3 - not needed for cloudfront
+      // const getObjectParams = {
+      //   Bucket: bucketName,
+      //   Key: movie.url,
+      // };
+      // const command = new GetObjectCommand(getObjectParams);
+      // const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      // movie.full_url = full_url;
     }
     res.send(movies);
   } catch (error) {
@@ -58,13 +60,14 @@ export const getAllMovies = async (req, res) => {
     const m_movies = await Movie.find({ category });
     const movies = m_movies.map((movie) => movie.toObject());
     for (const movie of movies) {
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: movie.url,
-      };
-      const command = new GetObjectCommand(getObjectParams);
-      const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      movie.full_url = full_url;
+      // const getObjectParams = {
+      //   Bucket: bucketName,
+      //   Key: movie.url,
+      // };
+      // const command = new GetObjectCommand(getObjectParams);
+      // const full_url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      // movie.full_url = full_url;
+      movie.full_url = "https://dbgl7a08kprxr.cloudfront.net/" + movie.url;
     }
     res.json(movies);
   } catch (error) {
@@ -83,7 +86,7 @@ export const postMovie = async (req, res) => {
 
     req.file.buffer;
 
-    // save to S3
+    // save to S3 - we do this even though we are using cloudfront to get
     const videoName = randomVideoName();
     const params = {
       Bucket: bucketName,

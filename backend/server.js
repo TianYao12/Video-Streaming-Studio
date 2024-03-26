@@ -6,6 +6,7 @@ import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
 import s3Routes from "./routes/s3.routes.js";
+import search from "./controllers/search.controller.js";
 
 const app = express();
 dotenv.config();
@@ -24,8 +25,9 @@ app.use(cors(corsOptions));
 
 app.use("/api/auth", authRoutes);
 app.use("/s3", s3Routes);
+app.get("/search", search);
 
-app.listen(PORT, () => { 
+app.listen(PORT, () => {
   connectToMongoDB();
   console.log(`Server is running on port ${PORT}`);
 });
