@@ -1,4 +1,4 @@
-A Video Streaming app similar to Netflix where all users can view videos and authenticated users can also upload videos. Utilized React.js, Express.js, MongoDB, Amazon S3, Cloudfront, TailwindCSS<br><br>
+A Video Streaming app similar to Netflix where all users can view videos and authenticated users can also upload videos. Utilized React.js, Express.js, MongoDB, Amazon S3, Cloudfront, TailwindCSS<br>
 
 React.js - Used for frontend<br>
 Express.js - Used to build backend API routes to interact with user data stored in MongoDB as well as video data to and from S3<br>
